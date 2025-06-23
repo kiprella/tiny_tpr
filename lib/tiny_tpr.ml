@@ -6,12 +6,44 @@ type term =
 	| App of term * term    	(* function application *)
 	| Rec of term * term * term 	(* rec(base, step, n) *)
 
-let rec eval term = 
-	match term with
-	| Zero -> Zero
-	| Succ t -> Succ (eval t)
-	| Var x -> failwith ("Unbound variable: " ^ x)
-	| Lam (x, body) -> Lam (x, body)
-	| App (_,_) -> failwith "Function application not implemented yet"
-	| Rec (_,_,_) -> failwith "Recursion not implemented yet"
+let rec subst body x value =
+        match body with
+        | Zero -> Zero
+        | Succ t -> Succ (subst t x value)
+        | Var y -> if y = x then value else Var y
+        | Lam (y, t) -> if y = x then Lam (y, t) else Lam (y, subst t x value)
+        | App (t1, t2) -> App (subst t1 x value, subst t2 x value)
+        | Rec (b, s, n) -> Rec (subst b x value, subst s x value, subst n x value)
+
+let rec eval env term =
+        match term with
+        | Zero -> Zero
+        | Succ t -> Succ (eval env t)
+        | Var x -> (
+            match List.assoc_opt x env with
+            | Some v -> v
+            | None -> failwith ("Unbound variable: " ^ x)
+        )
+        | Lam (x, body) -> Lam (x, body)
+        | App (t1, t2) -> (
+            let v1 = eval env t1 in
+            let v2 = eval env t2 in
+            match v1 with
+            | Lam (x, body) -> eval env (subst body x v2)
+            | _ -> failwith "Attempting to apply a non-function"
+        )
+        | Rec (base, step, n) -> (
+            let v_base = eval env base in
+            let v_step = eval env step in
+            let rec iter m =
+                match m with
+                | Zero -> v_base
+                | Succ m' ->
+                        let prev = iter m' in
+                        eval env (App (v_step, prev))
+                | _ -> failwith "Non-numeral in recursion"
+            in
+            let vn = eval env n in
+            iter vn
+        )
 
