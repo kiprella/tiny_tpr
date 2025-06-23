@@ -47,3 +47,19 @@ let rec eval env term =
             iter vn
         )
 
+let rec make_nat n =
+    if n = 0 then Zero else Succ (make_nat (n - 1))
+
+let add =
+    Lam("m", Lam("n",
+        Rec (Var "n", Lam ("x", Succ (Var "x")), Var "m")))
+
+let mult = 
+    Lam("m", Lam ("n",
+        Rec (Zero, Lam("x", App (App (add, Var "m"), Var "x")), Var "n")))
+
+let rec term_to_int = function
+    | Zero -> 0
+    | Succ t -> 1 + term_to_int t
+    | _ -> failwith "Not a numeral"
+
