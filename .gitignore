@@ -1,0 +1,32 @@
+# Build artifacts (Dune/OCaml)
+_build/
+*.cmi
+*.cmo
+*.cmx
+*.cmt
+*.cmti
+*.cma
+*.cmxa
+*.cmxs
+*.o
+*.a
+*.annot
+*.bc
+*.exe
+
+# Editor/IDE artifacts
+*~
+.#*
+#*#
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Project-specific backups
+*.save
+
